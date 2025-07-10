@@ -1,0 +1,86 @@
+<%- include('partials/header') %>
+
+<style>
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7f9fa;
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+  }
+  .container {
+    max-width: 500px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 32px 24px;
+    text-align: center;
+  }
+  h1 {
+    color: #2d6a4f;
+    margin-bottom: 16px;
+  }
+  p {
+    font-size: 1.1em;
+    margin: 12px 0;
+    color: #333;
+  }
+  strong {
+    color: #40916c;
+  }
+  form {
+    margin-top: 28px;
+  }
+  button[type="submit"] {
+    background: #52b788;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 32px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button[type="submit"]:hover {
+    background: #40916c;
+  }
+  .btn-primary {
+    display: inline-block;
+    margin-top: 16px;
+    background: #40916c;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover {
+    background: #2d6a4f;
+  }
+  .fa-pills {
+    margin-right: 8px;
+  }
+</style>
+
+<div class="container">
+  <h1>שלום, <%= name %>!</h1>
+
+  <p>היום: <strong><%= today %></strong></p>
+
+  <p>מחלות כרוניות:
+    <strong><%= chronicDiseases %></strong>
+  </p>
+
+  <form action="/scan" method="GET">
+    <button type="submit">סרוק מזון</button>
+  </form>
+
+  <% if (userRole === 'patient') { %>
+    <a href="/medications" class="btn-primary">
+      <i class="fa-solid fa-pills"></i> ניהול התרופות שלי
+    </a>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

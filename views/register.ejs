@@ -1,0 +1,179 @@
+<%- include('partials/header') %>
+
+<style>
+    .register-container {
+        max-width: 480px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+        padding: 32px 28px 24px 28px;
+        direction: rtl;
+        font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    .register-container h2 {
+        text-align: center;
+        margin-bottom: 28px;
+        color: #2c3e50;
+        font-weight: 600;
+        letter-spacing: 1px;
+    }
+    .register-container label {
+        display: block;
+        margin-bottom: 6px;
+        margin-top: 18px;
+        font-weight: 500;
+        color: #34495e;
+    }
+    .register-container input[type="text"],
+    .register-container input[type="password"],
+    .register-container input[type="date"],
+    .register-container input[type="email"],
+    .register-container input[type="tel"],
+    .register-container select {
+        width: 100%;
+        padding: 9px 10px;
+        border: 1px solid #d0d7de;
+        border-radius: 6px;
+        background: #f8fafc;
+        margin-bottom: 4px;
+        font-size: 1em;
+        transition: border 0.2s;
+    }
+    .register-container input[type="file"] {
+        margin-top: 6px;
+        margin-bottom: 4px;
+    }
+    .register-container input:focus,
+    .register-container select:focus {
+        border-color: #3498db;
+        outline: none;
+        background: #fff;
+    }
+    .register-container button[type="submit"] {
+        width: 100%;
+        padding: 12px 0;
+        margin-top: 28px;
+        background: linear-gradient(90deg, #3498db 60%, #6dd5fa 100%);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 1.1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        box-shadow: 0 2px 8px rgba(52,152,219,0.08);
+    }
+    .register-container button[type="submit"]:hover {
+        background: linear-gradient(90deg, #2980b9 60%, #48c6ef 100%);
+    }
+    .alert-error {
+        background: #ffeaea;
+        color: #c0392b;
+        border: 1px solid #e57373;
+        border-radius: 6px;
+        padding: 10px 14px;
+        margin-bottom: 18px;
+        text-align: center;
+        font-weight: 500;
+    }
+</style>
+
+<div class="register-container">
+    <h2><%= title %></h2>
+
+    <% if (errorMessage) { %>
+        <div class="alert alert-error"><%= errorMessage %></div>
+    <% } %>
+
+    <form action="/register" method="POST" enctype="multipart/form-data" autocomplete="off">
+        <!-- בחר תפקיד -->
+        <label for="role">תפקיד</label>
+        <select id="role" name="role" required>
+            <option value="">-- בחר --</option>
+            <option value="patient" <%= (formData.role==='patient')?'selected':'' %>>מטופל</option>
+            <option value="doctor"  <%= (formData.role==='doctor') ?'selected':'' %>>רופא</option>
+        </select>
+
+        <!-- שדות משותפים -->
+        <label for="name">שם מלא</label>
+        <input type="text" id="name" name="name" value="<%= formData.name||'' %>" required />
+
+        <label for="idNumber">תעודת זהות</label>
+        <input type="text" id="idNumber" name="idNumber" value="<%= formData.idNumber||'' %>" required />
+
+        <label for="password">סיסמה</label>
+        <input type="password" id="password" name="password" required />
+
+        <!-- שדות ייעודיים למטופל -->
+        <div id="patient-fields" style="display:none;">
+            <label for="birthDate">תאריך לידה</label>
+            <input type="date" id="birthDate" name="birthDate"
+                         value="<%= formData.birthDate||'' %>" />
+
+            <label for="gender">מין</label>
+            <select id="gender" name="gender">
+                <option value="">-- בחר --</option>
+                <option value="male"   <%= formData.gender==='male'   ?'selected':'' %>>זכר</option>
+                <option value="female" <%= formData.gender==='female' ?'selected':'' %>>נקבה</option>
+                <option value="other"  <%= formData.gender==='other'  ?'selected':'' %>>אחר</option>
+            </select>
+
+            <label for="pregnant">הריון</label>
+            <select id="pregnant" name="pregnant">
+                <option value="false" <%= formData.pregnant==='false'?'selected':''%>>לא</option>
+                <option value="true"  <%= formData.pregnant==='true' ?'selected':''%>>כן</option>
+            </select>
+
+            <label for="breastfeeding">הנקה</label>
+            <select id="breastfeeding" name="breastfeeding">
+                <option value="false" <%= formData.breastfeeding==='false'?'selected':''%>>לא</option>
+                <option value="true"  <%= formData.breastfeeding==='true' ?'selected':''%>>כן</option>
+            </select>
+
+            <label for="chronicDiseases">מחלות כרוניות</label>
+            <input type="text" id="chronicDiseases" name="chronicDiseases"
+                         value="<%= formData.chronicDiseases||'' %>" />
+
+            <label for="email">אימייל</label>
+            <input type="email" id="email" name="email"
+                         value="<%= formData.email||'' %>" />
+
+            <label for="phone">טלפון</label>
+            <input type="tel" id="phone" name="phone"
+                         value="<%= formData.phone||'' %>" />
+
+            <label for="photo">תמונת פרופיל</label>
+            <input type="file" id="photo" name="photo" accept="image/*" />
+        </div>
+
+        <button type="submit">הרשם</button>
+    </form>
+</div>
+
+<script>
+    // הקשב לשינוי בתפקיד והצג/הסתר שדות מטופל
+    const roleEl = document.getElementById('role');
+    const patientFields = document.getElementById('patient-fields');
+
+    function togglePatientFields() {
+        if (roleEl.value === 'patient') {
+            patientFields.style.display = 'block';
+            // הפוך להגדרת required
+            ['birthDate','gender','pregnant','breastfeeding'].forEach(id => {
+                document.getElementById(id).required = true;
+            });
+        } else {
+            patientFields.style.display = 'none';
+            ['birthDate','gender','pregnant','breastfeeding'].forEach(id => {
+                document.getElementById(id).required = false;
+            });
+        }
+    }
+
+    roleEl.addEventListener('change', togglePatientFields);
+    // קרא גם בטעינת העמוד (למקרה של עריכה חוזרת)
+    togglePatientFields();
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,175 @@
+<%- include('partials/header') %>
+
+<style>
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #f7fafc;
+    margin: 0;
+    padding: 0;
+  }
+  .scan-container {
+    max-width: 420px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    padding: 32px 28px 28px 28px;
+  }
+  h1 {
+    text-align: center;
+    color: #2d3748;
+    margin-bottom: 24px;
+    font-size: 2rem;
+    letter-spacing: 1px;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+  input[type="file"], input[type="text"] {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 8px;
+    background: #f1f5f9;
+    width: 100%;
+    font-size: 1rem;
+  }
+  button[type="submit"], button[type="button"] {
+    background: #3182ce;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 28px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-weight: 500;
+    letter-spacing: 1px;
+  }
+  button[type="button"] {
+    background: #4a5568;
+  }
+  button:hover {
+    background: #2563eb;
+  }
+  .error {
+    color: #e53e3e;
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 0 0 18px 0;
+    text-align: center;
+    font-weight: 500;
+  }
+  h2 {
+    color: #2b6cb0;
+    margin-top: 18px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  h3 {
+    color: #4a5568;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  ul {
+    list-style: disc inside;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 320px;
+  }
+  ul li {
+    background: #f1f5f9;
+    margin: 6px 0;
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: #2d3748;
+    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .interaction-report {
+    background: #edf2f7;
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 16px;
+    white-space: pre-wrap;
+    color: #2d3748;
+    font-size: 0.95rem;
+  }
+  img.uploaded {
+    max-width: 100%;
+    border-radius: 6px;
+    margin-bottom: 16px;
+  }
+</style>
+
+<div class="scan-container">
+  <h1><%= title %></h1>
+
+  <% if (!detected && !confirmed) { %>
+    <form action="/scan" method="POST" enctype="multipart/form-data">
+      <input type="file" name="image" accept="image/*" required />
+      <button type="submit">סרוק</button>
+    </form>
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+  <% } %>
+
+  <% if (detected) { %>
+    <img src="<%= detected.imageUrl %>" alt="Uploaded dish" class="uploaded" />
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+    <h2>מנה מזוהה: <%= detected.dishName %></h2>
+    <h3>אשר או ערוך את המרכיבים:</h3>
+    <form action="/scan/confirm" method="POST">
+      <input type="hidden" name="dishName" value="<%= detected.dishName %>" />
+      <ul id="ingredient-list">
+        <% detected.ingredients.forEach(ing => { %>
+          <li>
+            <input type="text" name="ingredients" value="<%= ing %>" />
+            <button type="button" onclick="this.parentNode.remove()">✕</button>
+          </li>
+        <% }) %>
+      </ul>
+      <button type="button" onclick="
+        const ul = document.getElementById('ingredient-list');
+        const li = document.createElement('li');
+        li.innerHTML = '<input type=\'text\' name=\'ingredients\' placeholder=\'מרכיב חדש\'>' +
+                       '<button type=\'button\' onclick=\'this.parentNode.remove()\'>✕</button>';
+        ul.appendChild(li);
+      ">הוסף מרכיב</button>
+      <button type="submit">אשר ושמור</button>
+    </form>
+  <% } %>
+
+  <% if (confirmed) { %>
+    <h2>תוצאות הסריקה</h2>
+    <h3>מנה: <%= confirmed.dishName %></h3>
+    <h3>מרכיבים סופיים:</h3>
+    <ul>
+      <% confirmed.ingredients.forEach(ing => { %>
+        <li><%= ing %></li>
+      <% }) %>
+    </ul>
+    <h3>בדיקת אינטראקציות ותזונה מומלצת:</h3>
+    <ul>
+      <% confirmed.interactionData.forEach(item => { %>
+        <li>
+          <strong><%= item.medication %>:</strong> <%= item.interaction %><br />
+          <em>המלצה:</em> <%= item.recommendation %>
+        </li>
+      <% }) %>
+    </ul>
+    <a href="/scan"><button type="button">סרוק שוב</button></a>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

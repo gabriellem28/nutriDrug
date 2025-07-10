@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= typeof title !== 'undefined' ? title : '' %> | Food & Drug</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <nav>
+    <a href="/">בית</a>
+    <% if (userRole === 'doctor') { %> | <a href="/patients">מטופלים</a><% } %>
+    <% if (userRole === 'patient') { %> | <a href="/scan">סריקת מזון</a> <a href="/medications">תרופות שלי</a> <% }  %>
+  </nav>
+
+  <div class="user-info">
+    <% if (userName) { %>
+      שלום, <strong><%= userName %></strong>!
+      <form action="/logout" method="POST" style="display:inline;">
+        <button type="submit">התנתק</button>
+      </form>
+    <% } else { %>
+      <a href="/login">התחבר</a> | <a href="/register">הרשם</a>
+    <% } %>
+  </div>
+
+  <hr>

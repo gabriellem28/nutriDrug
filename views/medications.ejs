@@ -1,0 +1,180 @@
+<%- include('partials/header') %>
+
+<div class="container">
+  <h2 class="page-title"><i class="fa-solid fa-pills"></i> התרופות שלי</h2>
+  <% if (success) { %>
+    <div class="alert-success">
+      <i class="fa-solid fa-circle-check"></i> התרופות נשמרו בהצלחה!
+    </div>
+  <% } %>
+
+  <form action="/medications" method="POST" id="medicationsForm" autocomplete="off">
+    <div id="medicationsList">
+      <% if (medications.length === 0) { %>
+        <div class="med-card">
+          <input type="text" name="medications" placeholder="שם התרופה" required>
+          <button type="button" class="remove-btn" title="הסר"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      <% } else { %>
+        <% medications.forEach(function(medication) { %>
+          <div class="med-card">
+            <input type="text" name="medications" value="<%= medication %>" required>
+            <button type="button" class="remove-btn" title="הסר"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+
+    <button type="button" id="addMedication" class="add-btn">
+      <i class="fa-solid fa-plus"></i> הוסף תרופה
+    </button>
+
+    <button type="submit" class="save-btn">
+      <i class="fa-solid fa-floppy-disk"></i> שמור
+    </button>
+  </form>
+</div>
+
+<script>
+  document.getElementById('addMedication').addEventListener('click', function() {
+    const medList = document.getElementById('medicationsList');
+    const div = document.createElement('div');
+    div.className = 'med-card';
+    div.innerHTML = `
+      <input type="text" name="medications" placeholder="שם התרופה" required>
+      <button type="button" class="remove-btn" title="הסר"><i class="fa-solid fa-xmark"></i></button>
+    `;
+    medList.appendChild(div);
+    div.querySelector('input').focus();
+  });
+
+  document.getElementById('medicationsList').addEventListener('click', function(e) {
+    if (e.target.closest('.remove-btn')) {
+      e.target.closest('.med-card').remove();
+    }
+  });
+</script>
+
+<style>
+  body {
+    background: #f4f8fb;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+  }
+  .container {
+    max-width: 480px;
+    margin: 40px auto;
+    background: #fff;
+    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07);
+    border-radius: 16px;
+    padding: 32px 28px 24px 28px;
+  }
+  .page-title {
+    text-align: center;
+    color: #2d3a4b;
+    margin-bottom: 28px;
+    font-size: 2rem;
+    letter-spacing: 1px;
+  }
+  .alert-success {
+    background: #e6f9ed;
+    color: #218838;
+    padding: 12px 18px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-size: 1.05rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px 0 rgba(40,167,69,0.07);
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  #medicationsList {
+    margin-bottom: 18px;
+  }
+  .med-card {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    background: #f8f9fa;
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.03);
+    transition: box-shadow 0.2s;
+  }
+  .med-card input {
+    flex: 1;
+    padding: 10px 12px;
+    margin-right: 10px;
+    border: 1px solid #e0e4ea;
+    border-radius: 6px;
+    font-size: 1rem;
+    background: #fff;
+    transition: border 0.2s;
+  }
+  .med-card input:focus {
+    border: 1.5px solid #007bff;
+    outline: none;
+    background: #f0f8ff;
+  }
+  .remove-btn {
+    background: #f44336;
+    color: #fff;
+    border: none;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: background 0.2s;
+  }
+  .remove-btn:hover {
+    background: #c82333;
+  }
+  .add-btn {
+    background: #28a745;
+    color: #fff;
+    border: none;
+    padding: 11px 0;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-size: 1.07rem;
+    font-weight: 500;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s;
+    box-shadow: 0 2px 8px 0 rgba(40,167,69,0.07);
+  }
+  .add-btn:hover {
+    background: #218838;
+  }
+  .save-btn {
+    background: #007bff;
+    color: #fff;
+    border: none;
+    padding: 13px 0;
+    border-radius: 8px;
+    font-size: 1.09rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 6px;
+    box-shadow: 0 2px 8px 0 rgba(0,123,255,0.07);
+    transition: background 0.2s;
+  }
+  .save-btn:hover {
+    background: #0056b3;
+  }
+  @media (max-width: 600px) {
+    .container {
+      padding: 18px 6vw 16px 6vw;
+    }
+    .page-title {
+      font-size: 1.3rem;
+    }
+  }
+</style>
+
+<%- include('partials/footer') %>

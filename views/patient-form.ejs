@@ -1,0 +1,192 @@
+<%- include('partials/header') %>
+
+<style>
+  .patient-form-container {
+    max-width: 480px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    padding: 32px 28px 24px 28px;
+    direction: rtl;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+  .patient-form-container h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #2d3a4b;
+  }
+  .patient-form label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #34495e;
+    margin-top: 18px;
+  }
+  .patient-form input[type="text"],
+  .patient-form input[type="email"],
+  .patient-form input[type="tel"],
+  .patient-form input[type="password"],
+  .patient-form input[type="date"],
+  .patient-form select {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    font-size: 1em;
+    margin-bottom: 4px;
+    background: #f8fafc;
+    transition: border 0.2s;
+  }
+  .patient-form input[type="file"] {
+    margin-top: 6px;
+    margin-bottom: 10px;
+  }
+  .patient-form button[type="submit"] {
+    width: 100%;
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 0;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-top: 24px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .patient-form button[type="submit"]:hover {
+    background: #125ea7;
+  }
+  .alert {
+    padding: 10px 16px;
+    border-radius: 6px;
+    margin-bottom: 18px;
+    font-size: 1em;
+  }
+  .alert-error {
+    background: #ffeaea;
+    color: #d32f2f;
+    border: 1px solid #f8bcbc;
+  }
+  .alert-success {
+    background: #eafaf1;
+    color: #388e3c;
+    border: 1px solid #b7e2c7;
+  }
+</style>
+
+<div class="patient-form-container">
+  <h2><%= title %></h2>
+
+  <% if (errorMessage) { %>
+    <div class="alert alert-error"><%= errorMessage %></div>
+  <% } %>
+  <% if (typeof successMessage !== 'undefined' && successMessage) { %>
+    <div class="alert alert-success"><%= successMessage %></div>
+  <% } %>
+
+  <form class="patient-form" action="/register" method="POST" enctype="multipart/form-data">
+    <!-- שם מלא -->
+    <label for="name">שם מלא</label>
+    <input
+      type="text"
+      id="name"
+      name="name"
+      value="<%= patient.name || '' %>"
+      required
+    />
+
+    <!-- תעודת זהות -->
+    <label for="idNumber">תעודת זהות</label>
+    <input
+      type="text"
+      id="idNumber"
+      name="idNumber"
+      value="<%= patient.idNumber || '' %>"
+      required
+    />
+
+    <!-- סיסמה -->
+    <label for="password">סיסמה</label>
+    <input
+      type="password"
+      id="password"
+      name="password"
+      <% if (patient._id) { %> placeholder="עדכן סיסמה חדשה (אופציונלי)" <% } else { %> required <% } %>
+    />
+
+    <!-- תאריך לידה -->
+    <label for="birthDate">תאריך לידה</label>
+    <input
+      type="date"
+      id="birthDate"
+      name="birthDate"
+      value="<%= patient.dateOfBirth ? patient.dateOfBirth.toISOString().split('T')[0] : '' %>"
+      required
+    />
+
+    <!-- מין -->
+    <label for="gender">מין</label>
+    <select id="gender" name="gender" required>
+      <option value="">בחר</option>
+      <option value="male"   <%= patient.gender === 'male'   ? 'selected' : '' %>>זכר</option>
+      <option value="female" <%= patient.gender === 'female' ? 'selected' : '' %>>נקבה</option>
+      <option value="other"  <%= patient.gender === 'other'  ? 'selected' : '' %>>אחר</option>
+    </select>
+
+    <!-- הריון -->
+    <label for="pregnant">הריון</label>
+    <select id="pregnant" name="pregnant" required>
+      <option value="false" <%= patient.pregnant === false ? 'selected' : '' %>>לא</option>
+      <option value="true"  <%= patient.pregnant === true  ? 'selected' : '' %>>כן</option>
+    </select>
+
+    <!-- הנקה -->
+    <label for="breastfeeding">הנקה</label>
+    <select id="breastfeeding" name="breastfeeding" required>
+      <option value="false" <%= patient.breastfeeding === false ? 'selected' : '' %>>לא</option>
+      <option value="true"  <%= patient.breastfeeding === true  ? 'selected' : '' %>>כן</option>
+    </select>
+
+    <!-- מחלות כרוניות -->
+    <label for="chronicDiseases">מחלות כרוניות</label>
+    <input
+      type="text"
+      id="chronicDiseases"
+      name="chronicDiseases"
+      value="<%= patient.chronicDiseases || '' %>"
+    />
+
+    <!-- אימייל -->
+    <label for="email">אימייל</label>
+    <input
+      type="email"
+      id="email"
+      name="email"
+      value="<%= patient.email || '' %>"
+    />
+
+    <!-- טלפון -->
+    <label for="phone">טלפון</label>
+    <input
+      type="tel"
+      id="phone"
+      name="phone"
+      value="<%= patient.phone || '' %>"
+    />
+
+    <!-- תמונת פרופיל -->
+    <label for="photo">תמונה</label>
+    <input
+      type="file"
+      id="photo"
+      name="photo"
+      accept="image/*"
+    />
+
+    <button type="submit"><%= patient._id ? 'עדכון פרופיל' : 'הרשמה' %></button>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

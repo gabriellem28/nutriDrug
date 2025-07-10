@@ -1,0 +1,43 @@
+body {
+  font-family: Arial, sans-serif;
+  direction: rtl;
+  text-align: right;
+  background: #f4f4f4;
+  margin: 0; /* ביטול המרווח הכללי */
+  padding: 0;
+}
+
+.container {
+  background: #fff;
+  padding: 32px 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  width: 90%;
+  max-width: 420px;
+  margin: 2rem auto; /* עכשיו הרווח מגיע רק מהקונטיינר */
+}
+
+nav a {
+  margin: 0 0.5rem;
+  text-decoration: none;
+  color: #0066cc;
+}
+h1, h2, h3 {
+  color: #333;
+}
+form {
+  margin: 1rem 0;
+}
+button {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+img {
+  max-width: 300px;
+  border: 1px solid #ccc;
+  margin: 1rem 0;
+}
+.error {
+  color: red;
+  font-weight: bold;
+}

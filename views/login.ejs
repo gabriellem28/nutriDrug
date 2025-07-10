@@ -1,0 +1,104 @@
+<%- include('partials/header') %>
+<style>
+    body {
+        background: #f5f7fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .login-container {
+        max-width: 400px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        padding: 32px 28px 24px 28px;
+    }
+    .login-container h1 {
+        text-align: center;
+        color: #2d3a4b;
+        margin-bottom: 24px;
+    }
+    .login-container label {
+        display: block;
+        margin-bottom: 6px;
+        color: #2d3a4b;
+        font-weight: 500;
+        margin-top: 16px;
+    }
+    .login-container input,
+    .login-container select {
+        width: 100%;
+        padding: 10px 8px;
+        margin-bottom: 8px;
+        border: 1px solid #cfd8dc;
+        border-radius: 5px;
+        font-size: 1em;
+        background: #f9fafb;
+        transition: border 0.2s;
+    }
+    .login-container input:focus,
+    .login-container select:focus {
+        border-color: #1976d2;
+        outline: none;
+    }
+    .login-container .error {
+        color: #d32f2f;
+        background: #ffebee;
+        border: 1px solid #ffcdd2;
+        padding: 8px;
+        border-radius: 5px;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+    .login-container button {
+        width: 100%;
+        background: #1976d2;
+        color: #fff;
+        border: none;
+        padding: 12px;
+        border-radius: 5px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 18px;
+        transition: background 0.2s;
+    }
+    .login-container button:hover {
+        background: #1565c0;
+    }
+    .login-container p {
+        text-align: center;
+        margin-top: 18px;
+        color: #2d3a4b;
+    }
+    .login-container a {
+        color: #1976d2;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .login-container a:hover {
+        text-decoration: underline;
+    }
+</style>
+<div class="login-container">
+    <h1><%= title %></h1>
+    <form action="/login" method="POST">
+        <% if (error) { %>
+            <p class="error"><%= error %></p>
+        <% } %>
+        <label>תעודת זהות:</label>
+        <input type="text" name="idNumber" required />
+
+        <label>סיסמה:</label>
+        <input type="password" name="password" required />
+
+        <label>תפקיד:</label>
+        <select name="role">
+            <option value="patient">מטופל</option>
+            <option value="doctor">רופא</option>
+        </select>
+
+        <button type="submit">התחבר</button>
+    </form>
+    <p>אין לך חשבון? <a href="/register">הרשם כאן</a></p>
+</div>
+<%- include('partials/footer') %>
