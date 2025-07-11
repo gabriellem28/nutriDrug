@@ -1,10 +1,13 @@
 <%- include('partials/header') %>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-<div class="container">
+<div class="medications-container">
   <h2 class="page-title"><i class="fa-solid fa-pills"></i> התרופות שלי</h2>
+
   <% if (success) { %>
     <div class="alert-success">
-      <i class="fa-solid fa-circle-check"></i> התרופות נשמרו בהצלחה!
+      <i class="fa-solid fa-circle-check"></i>
+      התרופות נשמרו בהצלחה!
     </div>
   <% } %>
 
@@ -12,43 +15,46 @@
     <div id="medicationsList">
       <% if (medications.length === 0) { %>
         <div class="med-card">
+          <i class="fa-solid fa-capsules med-icon"></i>
           <input type="text" name="medications" placeholder="שם התרופה" required>
           <button type="button" class="remove-btn" title="הסר"><i class="fa-solid fa-xmark"></i></button>
         </div>
       <% } else { %>
         <% medications.forEach(function(medication) { %>
           <div class="med-card">
-            <input type="text" name="medications" value="<%= medication %>" required>
+            <i class="fa-solid fa-capsules med-icon"></i>
+            <input type="text" name="medications" value="<%= medication %>" placeholder="שם התרופה" required>
             <button type="button" class="remove-btn" title="הסר"><i class="fa-solid fa-xmark"></i></button>
           </div>
         <% }); %>
       <% } %>
     </div>
 
-    <button type="button" id="addMedication" class="add-btn">
-      <i class="fa-solid fa-plus"></i> הוסף תרופה
-    </button>
-
-    <button type="submit" class="save-btn">
-      <i class="fa-solid fa-floppy-disk"></i> שמור
-    </button>
+    <div class="actions">
+      <button type="button" id="addMedication" class="btn add-btn">
+        <i class="fa-solid fa-plus"></i> הוסף תרופה
+      </button>
+      <button type="submit" class="btn save-btn">
+        <i class="fa-solid fa-floppy-disk"></i> שמור
+      </button>
+    </div>
   </form>
 </div>
 
 <script>
-  document.getElementById('addMedication').addEventListener('click', function() {
-    const medList = document.getElementById('medicationsList');
-    const div = document.createElement('div');
-    div.className = 'med-card';
-    div.innerHTML = `
+  const medsList = document.getElementById('medicationsList');
+  document.getElementById('addMedication').addEventListener('click', () => {
+    const card = document.createElement('div');
+    card.className = 'med-card';
+    card.innerHTML = `
+      <i class="fa-solid fa-capsules med-icon"></i>
       <input type="text" name="medications" placeholder="שם התרופה" required>
       <button type="button" class="remove-btn" title="הסר"><i class="fa-solid fa-xmark"></i></button>
     `;
-    medList.appendChild(div);
-    div.querySelector('input').focus();
+    medsList.appendChild(card);
+    card.querySelector('input').focus();
   });
-
-  document.getElementById('medicationsList').addEventListener('click', function(e) {
+  medsList.addEventListener('click', e => {
     if (e.target.closest('.remove-btn')) {
       e.target.closest('.med-card').remove();
     }
@@ -58,123 +64,131 @@
 <style>
   body {
     background: #f4f8fb;
-    font-family: 'Segoe UI', 'Arial', sans-serif;
+    font-family: 'Segoe UI', Arial, sans-serif;
   }
-  .container {
-    max-width: 480px;
-    margin: 40px auto;
-    background: #fff;
-    box-shadow: 0 4px 24px 0 rgba(0,0,0,0.07);
+  .medications-container {
+    max-width: 500px;
+    margin: 50px auto;
+    background: #ffffff;
     border-radius: 16px;
-    padding: 32px 28px 24px 28px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 36px 24px;
+    direction: rtl;
   }
   .page-title {
     text-align: center;
-    color: #2d3a4b;
-    margin-bottom: 28px;
+    color: #2d3748;
+    margin-bottom: 24px;
     font-size: 2rem;
     letter-spacing: 1px;
   }
   .alert-success {
-    background: #e6f9ed;
-    color: #218838;
-    padding: 12px 18px;
+    background: #ddf7e4;
+    color: #2f855a;
+    padding: 12px 16px;
     border-radius: 8px;
-    margin-bottom: 18px;
-    font-size: 1.05rem;
+    margin-bottom: 20px;
+    font-size: 1rem;
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 2px 8px 0 rgba(40,167,69,0.07);
   }
   form {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 16px;
   }
   #medicationsList {
-    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
   .med-card {
     display: flex;
     align-items: center;
-    margin-bottom: 12px;
-    background: #f8f9fa;
-    padding: 10px 14px;
+    background: #f9fafb;
+    padding: 12px 14px;
     border-radius: 8px;
-    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.03);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     transition: box-shadow 0.2s;
+  }
+  .med-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .med-icon {
+    color: #4a5568;
+    margin: 0 10px;
+    font-size: 1.2rem;
   }
   .med-card input {
     flex: 1;
     padding: 10px 12px;
-    margin-right: 10px;
-    border: 1px solid #e0e4ea;
+    border: 1px solid #e2e8f0;
     border-radius: 6px;
     font-size: 1rem;
     background: #fff;
-    transition: border 0.2s;
+    transition: border-color 0.2s;
   }
   .med-card input:focus {
-    border: 1.5px solid #007bff;
+    border-color: #63b3ed;
     outline: none;
-    background: #f0f8ff;
   }
   .remove-btn {
-    background: #f44336;
-    color: #fff;
+    background: #e53e3e;
     border: none;
-    padding: 8px 10px;
+    color: #fff;
+    padding: 8px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1rem;
     transition: background 0.2s;
+    margin-left: 10px;
   }
   .remove-btn:hover {
-    background: #c82333;
+    background: #c53030;
   }
-  .add-btn {
-    background: #28a745;
-    color: #fff;
+  .actions {
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+  }
+  .btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 0;
     border: none;
-    padding: 11px 0;
     border-radius: 8px;
-    margin-bottom: 18px;
-    font-size: 1.07rem;
+    font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    width: 100%;
     transition: background 0.2s;
-    box-shadow: 0 2px 8px 0 rgba(40,167,69,0.07);
+    color: #fff;
+  }
+  .add-btn {
+    background: #f6ad55;
   }
   .add-btn:hover {
-    background: #218838;
+    background: #ed8936;
   }
   .save-btn {
-    background: #007bff;
-    color: #fff;
-    border: none;
-    padding: 13px 0;
-    border-radius: 8px;
-    font-size: 1.09rem;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 6px;
-    box-shadow: 0 2px 8px 0 rgba(0,123,255,0.07);
-    transition: background 0.2s;
+    background: #4299e1;
   }
   .save-btn:hover {
-    background: #0056b3;
+    background: #3182ce;
   }
   @media (max-width: 600px) {
-    .container {
-      padding: 18px 6vw 16px 6vw;
+    .medications-container {
+      padding: 24px 16px;
+      margin: 30px auto;
     }
     .page-title {
-      font-size: 1.3rem;
+      font-size: 1.5rem;
+    }
+    .actions {
+      flex-direction: column;
     }
   }
 </style>
-
-<%- include('partials/footer') %>

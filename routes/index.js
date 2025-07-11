@@ -1,37 +1,79 @@
-const express = require('express');
-const path    = require('path');
-const fs      = require('fs');
-const multer  = require('multer');
-
-const mainController = require('../controllers/mainController');
-const scanController = require('../controllers/scanController');
+// FILE: routes/index.js
+const express      = require('express');
+const path         = require('path');
+const fs           = require('fs');
+const multer       = require('multer');
+const mainController       = require('../controllers/mainController');
+const scanController       = require('../controllers/scanController');
+const medicationController = require('../controllers/medicationController');
 const { ensureLoggedIn, ensureDoctor, ensurePatient } = require('../middleware/auth');
-const medicationController = require('../controllers/medicationController'); 
+
 const router = express.Router();
 
-// תיקיית העלאות ושאר המולטר
+// — Multer setup for uploads —
 const uploadDir = path.join(__dirname, '..', 'public', 'images', 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 const upload = multer({ dest: uploadDir });
 
-// דף הבית
+// — New: edit chronic diseases —
+router.post(
+  '/profile/edit-chronic',
+  ensureLoggedIn,
+  ensurePatient,
+  mainController.updateChronic
+);
+
+// — Home —
 router.get('/', ensureLoggedIn, mainController.showHome);
 
-// רופא: ניהול מטופלים
-router.get('/patients',     ensureLoggedIn, ensureDoctor, mainController.listPatients);
-router.get('/patients/new', ensureLoggedIn, ensureDoctor, mainController.showPatientForm);
-router.post('/patients',    ensureLoggedIn, ensureDoctor, upload.single('photo'), mainController.createPatient);
+// — Doctor only: manage patients —
+router.get('/patients',       ensureLoggedIn, ensureDoctor, mainController.listPatients);
+router.get('/patients/new',   ensureLoggedIn, ensureDoctor, mainController.showPatientForm);
+router.post(
+  '/patients',
+  ensureLoggedIn,
+  ensureDoctor,
+  upload.single('photo'),
+  mainController.createPatient
+);
 
-// מטופל: השלמת פרופיל
-router.get( '/patients/profile', ensureLoggedIn, ensurePatient, mainController.showPatientForm);
-router.post('/patients/profile', ensureLoggedIn, ensurePatient, upload.single('photo'), mainController.completePatientProfile);
+// — Patient: complete profile —
+router.get(
+  '/patients/profile',
+  ensureLoggedIn,
+  ensurePatient,
+  mainController.showPatientForm
+);
+router.post(
+  '/patients/profile',
+  ensureLoggedIn,
+  ensurePatient,
+  upload.single('photo'),
+  mainController.completePatientProfile
+);
 
-// מטופל: סריקת מזון
-router.get( '/scan', ensureLoggedIn, ensurePatient, scanController.getScanPage);
-router.post('/scan', ensureLoggedIn, ensurePatient, upload.single('image'), scanController.postScan);
-router.post('/scan/confirm', scanController.confirmScan);
+// — Patient: scan food —
+router.get(
+  '/scan',
+  ensureLoggedIn,
+  ensurePatient,
+  scanController.getScanPage
+);
+router.post(
+  '/scan',
+  ensureLoggedIn,
+  ensurePatient,
+  upload.single('image'),
+  scanController.postScan
+);
+router.post(
+  '/scan/confirm',
+  ensureLoggedIn,           // חשוב גם כאן לוודא שהמטופל מחובר
+  ensurePatient,
+  scanController.confirmScan
+);
 
-// ---  נתיבי שאלון תרופות (מטופל בלבד) ---
+// — Patient: medications form —
 router.get(
   '/medications',
   ensureLoggedIn,

@@ -1,86 +1,273 @@
 <%- include('partials/header') %>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<div class="patient-home-container">
+  <!-- ברוך הבא -->
+  <div class="welcome-banner">
+    <h1>שלום, <%= name %>!</h1>
+    <p class="today"><i class="fa-solid fa-calendar-day"></i> היום: <%= today %></p>
+  </div>
+
+  <!-- סריקות אחרונות -->
+  <section class="panel recent-scans">
+    <h2><i class="fa-solid fa-clock-rotate-left"></i> סריקות אחרונות</h2>
+    <% if (recentScans.length) { %>
+      <div class="scans-list">
+        <% recentScans.forEach(scan => { %>
+          <div class="scan-card">
+            <div class="scan-date"><i class="fa-solid fa-calendar"></i> <%= new Date(scan.date).toLocaleDateString('he-IL',{ day:'numeric', month:'long' }) %></div>
+            <div class="scan-dish"><i class="fa-solid fa-utensils"></i> <%= scan.dishName %></div>
+            <% if (scan.interactions.length) { %>
+              <ul>
+                <% scan.interactions.forEach(int => { %>
+                  <li><i class="fa-solid fa-pills"></i> <strong><%= int.medication %></strong>: <%= int.recommendation %></li>
+                <% }) %>
+              </ul>
+            <% } else { %>
+              <p class="no-data">אין אינטראקציות</p>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <p class="no-data">לא קיימות סריקות</p>
+    <% } %>
+  </section>
+
+  <!-- תרופות פעילות -->
+  <section class="panel medications-panel">
+    <h2><i class="fa-solid fa-capsules"></i> תרופות פעילות</h2>
+    <% if (medications.length) { %>
+      <ul>
+        <% medications.forEach(med => { %>
+          <li><i class="fa-solid fa-pills"></i> <%= med %></li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="no-data">לא צוינו תרופות</p>
+    <% } %>
+  </section>
+
+  <!-- פעולות מרכזיות -->
+  <div class="actions">
+    <a href="/scan" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> סרוק מזון</a>
+    <a href="/medications" class="btn btn-secondary"><i class="fa-solid fa-pen-to-square"></i> נהל תרופות</a>
+  </div>
+
+  <!-- מחלות כרוניות -->
+  <section class="panel patient-info">
+    <div class="panel-header">
+      <h2><i class="fa-solid fa-notes-medical"></i> מחלות כרוניות</h2>
+      <button id="edit-chronic-btn" class="btn btn-icon"><i class="fa-solid fa-pen"></i></button>
+    </div>
+    <% if (Array.isArray(chronicDiseases) && chronicDiseases.length) { %>
+      <ul class="chronic-list">
+        <% chronicDiseases.forEach(disease => { %>
+          <li><i class="fa-solid fa-circle"></i> <%= disease %></li>
+        <% }) %>
+      </ul>
+    <% } else { %>
+      <p class="no-data">לא צוינו מחלות כרוניות</p>
+    <% } %>
+  </section>
+</div>
+
+<!-- מודאל לעריכת מחלות -->
+<div id="chronic-modal" class="modal-overlay hidden">
+  <div class="modal-content">
+    <button id="close-modal" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+    <h2><i class="fa-solid fa-notes-medical"></i> עדכון מחלות כרוניות</h2>
+    <form action="/profile/edit-chronic" method="POST">
+      <textarea name="chronicDiseases" rows="5" placeholder="הזן מחלה בכל שורה..."><%= Array.isArray(chronicDiseases) ? chronicDiseases.join('\n') : chronicDiseases %></textarea>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> שמור</button>
+        <button type="button" id="cancel-modal" class="btn btn-secondary"><i class="fa-solid fa-ban"></i> ביטול</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const editBtn   = document.getElementById('edit-chronic-btn');
+  const modal     = document.getElementById('chronic-modal');
+  const closeBtn  = document.getElementById('close-modal');
+  const cancelBtn = document.getElementById('cancel-modal');
+  editBtn.addEventListener('click',   () => modal.classList.remove('hidden'));
+  closeBtn.addEventListener('click',  () => modal.classList.add('hidden'));
+  cancelBtn.addEventListener('click', () => modal.classList.add('hidden'));
+</script>
 
 <style>
-  body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: #f7f9fa;
-    margin: 0;
-    padding: 0;
-    direction: rtl;
-  }
-  .container {
-    max-width: 500px;
-    margin: 40px auto;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    padding: 32px 24px;
-    text-align: center;
-  }
-  h1 {
-    color: #2d6a4f;
-    margin-bottom: 16px;
-  }
-  p {
-    font-size: 1.1em;
-    margin: 12px 0;
-    color: #333;
-  }
-  strong {
-    color: #40916c;
-  }
-  form {
-    margin-top: 28px;
-  }
-  button[type="submit"] {
-    background: #52b788;
-    color: #fff;
-    border: none;
-    border-radius: 6px;
-    padding: 12px 32px;
-    font-size: 1.1em;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  button[type="submit"]:hover {
-    background: #40916c;
-  }
-  .btn-primary {
-    display: inline-block;
-    margin-top: 16px;
-    background: #40916c;
-    color: #fff;
-    text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    transition: background 0.2s;
-  }
-  .btn-primary:hover {
-    background: #2d6a4f;
-  }
-  .fa-pills {
-    margin-right: 8px;
-  }
+/* Container */
+.patient-home-container {
+  max-width: 800px;
+  margin: 40px auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 32px 24px;
+  direction: rtl;
+}
+/* Banner */
+.welcome-banner h1 {
+  font-size: 2rem;
+  color: #2d3748;
+  text-align: center;
+  margin: 0;
+}
+.welcome-banner .today {
+  font-size: 0.9rem;
+  color: #4a5568;
+  text-align: center;
+  margin-bottom: 24px;
+}
+/* Panels */
+.panel {
+  background: #f9fafb;
+  border-left: 4px solid #3182ce;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.panel h2 {
+  font-size: 1.2rem;
+  color: #2d3748;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Scan Cards */
+.scans-list {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+}
+.scan-card {
+  flex: 0 0 180px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.scan-date, .scan-dish {
+  color: #4a5568;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.scan-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.scan-card li {
+  background: #f1f5f9;
+  padding: 6px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #2d3748;
+}
+.no-data {
+  color: #718096;
+  text-align: center;
+}
+/* Item lists */
+.medications-panel ul, .chronic-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.medications-panel li, .chronic-list li {
+  background: #ffffff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2d3748;
+}
+/* Actions */
+.actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin: 28px 0;
+}
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #fff;
+  transition: background 0.2s;
+}
+.btn-primary { background: #4299e1; }
+.btn-primary:hover { background: #3182ce; }
+.btn-secondary { background: #faa844; }
+.btn-secondary:hover { background: #ff8c00; }
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #4299e1;
+  cursor: pointer;
+}
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.hidden { display: none; }
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%; max-width: 400px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  position: relative;
+}
+.close-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.modal-actions .btn { padding: 8px 16px; font-size: 0.9rem; }
+@media (max-width: 600px) {
+  .patient-home-container { padding: 24px 16px; margin: 30px auto; }
+  .scan-card { flex: 0 0 140px; }
+}
 </style>
-
-<div class="container">
-  <h1>שלום, <%= name %>!</h1>
-
-  <p>היום: <strong><%= today %></strong></p>
-
-  <p>מחלות כרוניות:
-    <strong><%= chronicDiseases %></strong>
-  </p>
-
-  <form action="/scan" method="GET">
-    <button type="submit">סרוק מזון</button>
-  </form>
-
-  <% if (userRole === 'patient') { %>
-    <a href="/medications" class="btn-primary">
-      <i class="fa-solid fa-pills"></i> ניהול התרופות שלי
-    </a>
-  <% } %>
-</div>
 
 <%- include('partials/footer') %>

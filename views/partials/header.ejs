@@ -2,25 +2,93 @@
 <html lang="he">
 <head>
   <meta charset="UTF-8" />
-  <title><%= typeof title !== 'undefined' ? title : '' %> | Food & Drug</title>
+  <title><%= typeof title !== 'undefined' ? title : '' %> | NutriDrug</title>
   <link rel="stylesheet" href="/css/styles.css" />
+  <style>
+    body {
+      background:
+        linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+        url('/images/background.jpeg') no-repeat center center fixed !important;
+      background-size: cover !important;
+      background-color: #f9fafb;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    }
+    /* Header bar */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255,255,255,0.9);
+      padding: 12px 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+   .app-title {
+  font-size: 2.4rem;   /* במקום 1.8rem */
+  font-weight: 700;
+  color: #3182ce;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+    .app-title .emoji {
+      font-size: 2 rem;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      direction: rtl;
+    }
+    .header-right nav a {
+      color: #2d6a4f;
+      text-decoration: none;
+      margin: 0 8px;
+      font-size: 0.95rem;
+    }
+    .header-right .user-info {
+      font-size: 0.95rem;
+    }
+    .header-right .user-info form button {
+      background: none;
+      border: none;
+      color: #e53e3e;
+      cursor: pointer;
+    }
+    hr {
+      margin: 0;
+      border: none;
+      border-bottom: 1px solid #e2e8f0;
+    }
+  </style>
 </head>
 <body>
-  <nav>
-    <a href="/">בית</a>
-    <% if (userRole === 'doctor') { %> | <a href="/patients">מטופלים</a><% } %>
-    <% if (userRole === 'patient') { %> | <a href="/scan">סריקת מזון</a> <a href="/medications">תרופות שלי</a> <% }  %>
-  </nav>
-
-  <div class="user-info">
-    <% if (userName) { %>
-      שלום, <strong><%= userName %></strong>!
-      <form action="/logout" method="POST" style="display:inline;">
-        <button type="submit">התנתק</button>
-      </form>
-    <% } else { %>
-      <a href="/login">התחבר</a> | <a href="/register">הרשם</a>
-    <% } %>
+  <div class="header-bar">
+    <div class="app-title">
+      <span class="emoji">💊</span>
+      <span class="emoji">🍕</span>
+      NutriDrug
+    </div>
+    <div class="header-right">
+      <nav>
+        <a href="/">בית</a>
+        <% if (userRole === 'doctor') { %><a href="/patients">מטופלים</a><% } %>
+        <% if (userRole === 'patient') { %><a href="/scan">סריקת מזון</a><a href="/medications">תרופות שלי</a><% } %>
+      </nav>
+      <div class="user-info">
+        <% if (userName) { %>
+          שלום, <strong><%= userName %></strong>!
+          <form action="/logout" method="POST" style="display:inline;">
+            <button type="submit">התנתק</button>
+          </form>
+        <% } else { %>
+          <a href="/login">התחבר</a> | <a href="/register">הרשם</a>
+        <% } %>
+      </div>
+    </div>
   </div>
-
   <hr>

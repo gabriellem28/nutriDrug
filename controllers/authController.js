@@ -35,7 +35,7 @@ exports.login = async (req, res) => {
     req.session.userName = user.name;
 
     // Redirect by role
-   return res.redirect('/');
+    return res.redirect('/');
   } catch (err) {
     return res.render('login', {
       title: 'התחברות',
@@ -86,6 +86,13 @@ exports.register = async (req, res) => {
       }
     }
 
+    // --- chronicDiseases parsing (textarea, one disease per line) ---
+    const chronicInput = req.body.chronicDiseases || '';
+    const chronicArray = chronicInput
+      .split(/\r?\n/)
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
     // Create patient record
     const patient = new Patient({
       name,
@@ -96,7 +103,7 @@ exports.register = async (req, res) => {
       breastfeeding:   req.body.breastfeeding === 'true',
       dateOfBirth:     dob,
       age,
-      chronicDiseases: req.body.chronicDiseases,
+      chronicDiseases: chronicArray,
       email:           req.body.email,
       phone:           req.body.phone,
       photoUrl:        req.file ? `/images/uploads/${req.file.filename}` : ''
@@ -108,14 +115,26 @@ exports.register = async (req, res) => {
     req.session.userRole = 'patient';
     req.session.userName = patient.name;
 
-    return res.redirect('/scan');
+    return res.redirect('/login');
 
   } catch (err) {
     console.error('🔥 register error:', err);
+
+    // On error, rebuild formData so textarea repopulates correctly
+    let chronicArray = [];
+    if (req.body.chronicDiseases) {
+      chronicArray = Array.isArray(req.body.chronicDiseases)
+        ? req.body.chronicDiseases
+        : req.body.chronicDiseases.split(/\r?\n/).map(s => s.trim());
+    }
+
     return res.render('register', {
       title:        'הרשמה',
       errorMessage: err.message,
-      formData:     req.body
+      formData: {
+        ...req.body,
+        chronicDiseases: chronicArray
+      }
     });
   }
 };

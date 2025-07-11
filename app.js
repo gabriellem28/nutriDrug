@@ -10,6 +10,7 @@ const session      = require('express-session');
 const multer       = require('multer');
 
 const app = express();
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ---- Session & Cookies ----
 app.use(cookieParser());
@@ -30,7 +31,7 @@ app.use((req, res, next) => {
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+
 
 // ---- Authentication Routes (login/register/logout) ----
 const authRouter = require('./routes/auth');
@@ -50,6 +51,7 @@ console.log('ensurePatient  =', ensurePatient);
 
 app.use('/patients', ensureLoggedIn, ensureDoctor);
 app.use('/scan',    ensureLoggedIn, ensurePatient);
+
 
 // ---- Main Application Routes ----
 const indexRouter = require('./routes/index');

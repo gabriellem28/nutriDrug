@@ -30,25 +30,27 @@
     }
     table {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+    thead {
+        display: table-header-group;
+    }
+    tbody tr {
         background: #fff;
         border-radius: 8px;
-        overflow: hidden;
         box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
     th, td {
-        padding: 14px 12px;
-        border-bottom: 1px solid #e5e7eb;
+        padding: 18px 16px;
         text-align: right;
+        line-height: 1.5;
     }
     th {
         background: #e3eafc;
         color: #2d3a4b;
         font-weight: 600;
         font-size: 1.05em;
-    }
-    tr:last-child td {
-        border-bottom: none;
     }
     tr:hover td {
         background: #f6f8fa;
@@ -59,14 +61,17 @@
             padding: 16px 4vw;
         }
         th, td {
-            padding: 10px 6px;
+            padding: 14px 8px;
             font-size: 0.98em;
+        }
+        table {
+            border-spacing: 0 8px;
         }
     }
 </style>
 
 <div class="container">
-    <h1>שלום, <%= name %>!</h1>
+    <h1>שלום, ד"ר <%= name %>!</h1>
     <h2>רשימת מטופלים</h2>
 
     <table>
@@ -76,6 +81,10 @@
                 <th>גיל</th>
                 <th>תעודת זהות</th>
                 <th>נרשם בתאריך</th>
+                <th>תרופות</th>
+                <th>מחלות כרוניות</th>
+                <th>טלפון</th>
+                <th>אימייל</th>
             </tr>
         </thead>
         <tbody>
@@ -85,6 +94,22 @@
                     <td><%= p.age %></td>
                     <td><%= p.idNumber %></td>
                     <td><%= new Date(p.createdAt).toLocaleDateString('he-IL') %></td>
+                    <td>
+                      <%= Array.isArray(p.medications) && p.medications.length
+                          ? p.medications.join(', ')
+                          : 'לא צוינו' %>
+                    </td>
+                    <td>
+                      <% if (Array.isArray(p.chronicDiseases) && p.chronicDiseases.length) { %>
+                        <%= p.chronicDiseases.join(', ') %>
+                      <% } else if (typeof p.chronicDiseases === 'string' && p.chronicDiseases.trim()) { %>
+                        <%= p.chronicDiseases %>
+                      <% } else { %>
+                        לא צוינו
+                      <% } %>
+                    </td>
+                    <td><%= p.phone || 'לא צויין' %></td>
+                    <td><%= p.email || 'לא צויין' %></td>
                 </tr>
             <% }) %>
         </tbody>

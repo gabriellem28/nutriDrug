@@ -1,5 +1,8 @@
 <%- include('partials/header') %>
 
+<!-- Font Awesome (אייקונים מקצועיים) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
 <style>
     .register-container {
         max-width: 480px;
@@ -77,6 +80,35 @@
         text-align: center;
         font-weight: 500;
     }
+    /* כפתורי אייקונים */
+    .icon-btn {
+        background: #ecf0f1;
+        border: 1px solid #bdc3c7;
+        color: #2c3e50;
+        font-size: 1em;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-top: 6px;
+    }
+    .icon-btn:hover {
+        background: #d0d7de;
+    }
+    .eye-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 6px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.1em;
+        color: #7f8c8d;
+    }
+    .password-wrapper {
+        position: relative;
+    }
 </style>
 
 <div class="register-container">
@@ -86,8 +118,7 @@
         <div class="alert alert-error"><%= errorMessage %></div>
     <% } %>
 
-    <form action="/register" method="POST" enctype="multipart/form-data" autocomplete="off">
-        <!-- בחר תפקיד -->
+    <form id="registerForm" action="/register" method="POST" enctype="multipart/form-data" autocomplete="off">
         <label for="role">תפקיד</label>
         <select id="role" name="role" required>
             <option value="">-- בחר --</option>
@@ -95,7 +126,6 @@
             <option value="doctor"  <%= (formData.role==='doctor') ?'selected':'' %>>רופא</option>
         </select>
 
-        <!-- שדות משותפים -->
         <label for="name">שם מלא</label>
         <input type="text" id="name" name="name" value="<%= formData.name||'' %>" required />
 
@@ -103,13 +133,22 @@
         <input type="text" id="idNumber" name="idNumber" value="<%= formData.idNumber||'' %>" required />
 
         <label for="password">סיסמה</label>
-        <input type="password" id="password" name="password" required />
+        <div class="password-wrapper">
+            <input type="password" id="password" name="password" required />
+            <button type="button" class="eye-btn" onclick="togglePassword('password', this)"><i class="fas fa-eye"></i></button>
+        </div>
+        <button type="button" class="icon-btn" onclick="generatePassword()"><i class="fas fa-lock"></i></button>
+        <span id="passwordStrength" style="display:block; margin-top:6px; font-size:0.9em;"></span>
 
-        <!-- שדות ייעודיים למטופל -->
-        <div id="patient-fields" style="display:none;">
+        <label for="confirmPassword">אימות סיסמה</label>
+        <div class="password-wrapper">
+            <input type="password" id="confirmPassword" name="confirmPassword" required />
+            <button type="button" class="eye-btn" onclick="togglePassword('confirmPassword', this)"><i class="fas fa-eye"></i></button>
+        </div>
+
+        <div id="patient-fields" style="display:<%= (formData.role==='patient') ? 'block' : 'none' %>;">
             <label for="birthDate">תאריך לידה</label>
-            <input type="date" id="birthDate" name="birthDate"
-                         value="<%= formData.birthDate||'' %>" />
+            <input type="date" id="birthDate" name="birthDate" value="<%= formData.birthDate||'' %>" />
 
             <label for="gender">מין</label>
             <select id="gender" name="gender">
@@ -119,29 +158,34 @@
                 <option value="other"  <%= formData.gender==='other'  ?'selected':'' %>>אחר</option>
             </select>
 
-            <label for="pregnant">הריון</label>
-            <select id="pregnant" name="pregnant">
-                <option value="false" <%= formData.pregnant==='false'?'selected':''%>>לא</option>
-                <option value="true"  <%= formData.pregnant==='true' ?'selected':''%>>כן</option>
-            </select>
+            <div id="pregnancySection">
+                <label for="pregnant">הריון</label>
+                <select id="pregnant" name="pregnant">
+                    <option value="false" <%= formData.pregnant==='false'?'selected':''%>>לא</option>
+                    <option value="true"  <%= formData.pregnant==='true' ?'selected':''%>>כן</option>
+                </select>
 
-            <label for="breastfeeding">הנקה</label>
-            <select id="breastfeeding" name="breastfeeding">
-                <option value="false" <%= formData.breastfeeding==='false'?'selected':''%>>לא</option>
-                <option value="true"  <%= formData.breastfeeding==='true' ?'selected':''%>>כן</option>
-            </select>
+                <label for="breastfeeding">הנקה</label>
+                <select id="breastfeeding" name="breastfeeding">
+                    <option value="false" <%= formData.breastfeeding==='false'?'selected':''%>>לא</option>
+                    <option value="true"  <%= formData.breastfeeding==='true' ?'selected':''%>>כן</option>
+                </select>
+            </div>
 
-            <label for="chronicDiseases">מחלות כרוניות</label>
-            <input type="text" id="chronicDiseases" name="chronicDiseases"
-                         value="<%= formData.chronicDiseases||'' %>" />
+            <label for="chronicDiseases">מחלות כרוניות (כל שורה = מחלה)</label>
+<textarea id="chronicDiseases" name="chronicDiseases" rows="5"
+  placeholder="הקלד מחלה חדשה בכל שורה…"
+><%= formData.chronicDiseases 
+      ? formData.chronicDiseases.join('\n') 
+      : '' %></textarea>
+
+      
 
             <label for="email">אימייל</label>
-            <input type="email" id="email" name="email"
-                         value="<%= formData.email||'' %>" />
+            <input type="email" id="email" name="email" value="<%= formData.email||'' %>" />
 
             <label for="phone">טלפון</label>
-            <input type="tel" id="phone" name="phone"
-                         value="<%= formData.phone||'' %>" />
+            <input type="tel" id="phone" name="phone" value="<%= formData.phone||'' %>" />
 
             <label for="photo">תמונת פרופיל</label>
             <input type="file" id="photo" name="photo" accept="image/*" />
@@ -152,14 +196,15 @@
 </div>
 
 <script>
-    // הקשב לשינוי בתפקיד והצג/הסתר שדות מטופל
     const roleEl = document.getElementById('role');
     const patientFields = document.getElementById('patient-fields');
+    const genderEl = document.getElementById('gender');
+    const pregnancySection = document.getElementById('pregnancySection');
+    const passwordEl = document.getElementById('password');
 
     function togglePatientFields() {
         if (roleEl.value === 'patient') {
             patientFields.style.display = 'block';
-            // הפוך להגדרת required
             ['birthDate','gender','pregnant','breastfeeding'].forEach(id => {
                 document.getElementById(id).required = true;
             });
@@ -171,9 +216,108 @@
         }
     }
 
+    function togglePregnancyFields() {
+        if (genderEl.value === 'male') {
+            pregnancySection.style.display = 'none';
+            ['pregnant','breastfeeding'].forEach(id => {
+                document.getElementById(id).required = false;
+            });
+        } else {
+            pregnancySection.style.display = 'block';
+            ['pregnant','breastfeeding'].forEach(id => {
+                document.getElementById(id).required = true;
+            });
+        }
+    }
+
+    function addChronicField() {
+        const container = document.getElementById('chronicContainer');
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.alignItems = 'center';
+        wrapper.style.gap = '8px';
+        wrapper.style.marginTop = '6px';
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'chronicDiseases[]';
+        input.style.flex = '1';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'icon-btn';
+        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        removeBtn.onclick = () => container.removeChild(wrapper);
+
+        wrapper.appendChild(input);
+        wrapper.appendChild(removeBtn);
+        container.appendChild(wrapper);
+    }
+
+    function togglePassword(fieldId, btn) {
+        const field = document.getElementById(fieldId);
+        const icon = btn.querySelector('i');
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function generatePassword() {
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+        let pass = "";
+        for (let i = 0; i < 12; i++) {
+            pass += charset.charAt(Math.floor(Math.random() * charset.length));
+        }
+        document.getElementById('password').value = pass;
+        document.getElementById('confirmPassword').value = pass;
+        checkPasswordStrength();
+    }
+
+    function checkPasswordStrength() {
+        const strengthEl = document.getElementById('passwordStrength');
+        const val = passwordEl.value;
+        let strength = 0;
+        if (val.length >= 8) strength++;
+        if (/[A-Z]/.test(val)) strength++;
+        if (/[0-9]/.test(val)) strength++;
+        if (/[^A-Za-z0-9]/.test(val)) strength++;
+
+        if (val.length === 0) {
+            strengthEl.textContent = '';
+        } else if (strength <= 1) {
+            strengthEl.textContent = 'חלשה';
+            strengthEl.style.color = '#e74c3c';
+        } else if (strength === 2) {
+            strengthEl.textContent = 'בינונית';
+            strengthEl.style.color = '#f39c12';
+        } else {
+            strengthEl.textContent = 'חזקה';
+            strengthEl.style.color = '#27ae60';
+        }
+    }
+
+    passwordEl.addEventListener('input', checkPasswordStrength);
+
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const pass = document.getElementById('password').value;
+        const confirm = document.getElementById('confirmPassword').value;
+        if (pass !== confirm) {
+            alert('הסיסמאות אינן תואמות!');
+            e.preventDefault();
+        }
+    });
+
     roleEl.addEventListener('change', togglePatientFields);
-    // קרא גם בטעינת העמוד (למקרה של עריכה חוזרת)
+    genderEl.addEventListener('change', togglePregnancyFields);
+
     togglePatientFields();
+    togglePregnancyFields();
 </script>
 
 <%- include('partials/footer') %>

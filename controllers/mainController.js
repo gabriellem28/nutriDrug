@@ -1,3 +1,5 @@
+// FILE: controllers/mainController.js
+
 const vision = require('@google-cloud/vision');
 const path   = require('path');
 const Patient = require('../models/patient');
@@ -6,37 +8,69 @@ const client = new vision.ImageAnnotatorClient({
   keyFilename: path.join(__dirname, '..', 'config', 'google-service-account.json')
 });
 
-// 1. דף הבית (doctor → patients, patient → patient-home)
+// 1. Show home page (doctor or patient)
 exports.showHome = async (req, res, next) => {
   try {
-      if (req.session.userRole === 'doctor') {
-      // עבור רופא, שלוף את כל המטופלים והצג אותם בתבנית doctor-home
-      const patients = await Patient.find().lean();
-      return res.render('doctor-home', {
-        title:    'בית רופא',
-        name:     req.session.userName,
-        patients
-      });
+    if (req.session.userRole === 'doctor') {
+      // Redirect doctors to the patients list
+      return res.redirect('/patients');
     }
+
+    // Patient flow:
     const patient = await Patient.findById(req.session.userId).lean();
     if (!patient) return res.redirect('/logout');
 
+    // Today's date in Hebrew
     const today = new Date().toLocaleDateString('he-IL', {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     });
 
-    res.render('patient-home', {
+    // Last 5 scans with interactions
+    const recentScans = (patient.scans || [])
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 5)
+      .map(scan => ({
+        date: scan.date,
+        dishName: scan.dishName,
+        interactions: scan.interactions || []
+      }));
+
+    // Active medications and chronic diseases
+    const medications = patient.medications || [];
+    const chronicDiseases = Array.isArray(patient.chronicDiseases)
+      ? patient.chronicDiseases
+      : [];
+
+    return res.render('patient-home', {
       title: 'בית',
       name: patient.name,
       today,
-      chronicDiseases: patient.chronicDiseases || 'לא צוינו'
+      recentScans,
+      medications,
+      chronicDiseases
     });
   } catch (err) {
     next(err);
   }
 };
 
-// 2. מציג טופס הוספת מטופל (doctor) או השלמת פרופיל (patient)
+// 2. Update chronic diseases via modal form
+exports.updateChronic = async (req, res, next) => {
+  try {
+    const chronicInput = req.body.chronicDiseases || '';
+    const chronicArray = chronicInput
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+
+    await Patient.findByIdAndUpdate(req.session.userId, { chronicDiseases: chronicArray });
+    return res.redirect('/');
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 3. Show form for adding patient (doctor) or completing profile (patient)
 exports.showPatientForm = async (req, res) => {
   try {
     let title = 'הוספת מטופל';
@@ -59,16 +93,25 @@ exports.showPatientForm = async (req, res) => {
   }
 };
 
-// 3. יצירת מטופל על ידי רופא
-exports.createPatient = async (req, res) => {
-  // הקוד שלך ל־createPatient
+// 4. Create patient (doctor)
+exports.createPatient = async (req, res, next) => {
+  try {
+    // TODO: implement createPatient logic (e.g., parse req.body, handle photo upload)
+    const { name, idNumber } = req.body;
+    // Add other fields as needed
+    const newPatient = new Patient({ name, idNumber /*, ... */ });
+    await newPatient.save();
+    return res.redirect('/patients');
+  } catch (err) {
+    next(err);
+  }
 };
 
-// 4. השלמת פרופיל למטופל (הפונקציה שהייתה חסרה)
+// 5. Complete profile (patient)
 exports.completePatientProfile = async (req, res) => {
   try {
-    // parse birthDate, calc age, וכו'
-    // עדכון מסד: await Patient.findByIdAndUpdate(req.session.userId, {...});
+    // TODO: parse birthDate, calculate age, and update other fields
+    // await Patient.findByIdAndUpdate(req.session.userId, { ... });
     return res.redirect('/scan');
   } catch (err) {
     return res.render('patient-form', {
@@ -79,7 +122,16 @@ exports.completePatientProfile = async (req, res) => {
   }
 };
 
-// 5. רשימת מטופלים (doctor)
-exports.listPatients = async (req, res) => {
-  // הקוד שלך ל־listPatients
+// 6. List patients (doctor)
+exports.listPatients = async (req, res, next) => {
+  try {
+    const patients = await Patient.find().lean();
+    return res.render('doctor-home', {
+      title: 'רשימת מטופלים',
+      name: req.session.userName,
+      patients
+    });
+  } catch (err) {
+    next(err);
+  }
 };

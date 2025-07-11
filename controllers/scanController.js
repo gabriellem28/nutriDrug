@@ -1,3 +1,5 @@
+// FILE: controllers/scanController.js
+
 const path = require('path');
 const { analyzeFood } = require('../services/foodVision');
 const { checkInteractions } = require('../services/medicationService');
@@ -18,10 +20,23 @@ exports.getScanPage = (req, res) => {
 
 /**
  * POST /scan
- * Handle image upload and detect dish + ingredients
+ * Handle image upload or manual dish name entry and detect dish + ingredients
  */
 exports.postScan = async (req, res) => {
   try {
+    // --- Manual entry branch ---
+    if (req.body.manualDishName) {
+      const dishName = req.body.manualDishName.trim();
+      const ingredients = [dishName];
+      return res.render('scan', {
+        title: 'אשר/ערוך מרכיבים',
+        detected: { dishName, ingredients, imageUrl: null },
+        confirmed: null,
+        error: null
+      });
+    }
+
+    // --- Image upload branch ---
     if (!req.file) {
       return res.render('scan', {
         title: 'סריקת מזון',
@@ -31,14 +46,14 @@ exports.postScan = async (req, res) => {
       });
     }
 
-    // Build file path and URL
+    // Build file path & URL
     const fullPath = path.join(req.file.destination, req.file.filename);
     const imageUrl = `/images/uploads/${req.file.filename}`;
 
-    // Detect dish name and ingredients
+    // Use AI to detect dish name and ingredients
     const { dishName, ingredients } = await analyzeFood(fullPath);
 
-    // Show user the detected data for confirmation/editing
+    // Show for user confirmation/editing
     res.render('scan', {
       title: 'אשר/ערוך מרכיבים',
       detected: { dishName, ingredients, imageUrl },
@@ -51,7 +66,7 @@ exports.postScan = async (req, res) => {
       title: 'סריקת מזון',
       detected: null,
       confirmed: null,
-      error: err.message || 'שגיאה בעיבוד התמונה, נסה שנית'
+      error: err.message || 'שגיאה בעיבוד הנתונים, נסה שנית'
     });
   }
 };
@@ -64,19 +79,29 @@ exports.confirmScan = async (req, res) => {
   try {
     const userId = req.session.userId;
     const { dishName } = req.body;
-    // Ensure ingredients is always an array
+    // Ensure we always work with an array
     const userIngredients = Array.isArray(req.body.ingredients)
       ? req.body.ingredients
       : [req.body.ingredients];
 
-    // Fetch user medications
+    // Fetch patient record to get current medications
     const patient = await Patient.findById(userId).lean();
     const medications = patient.medications || [];
 
-    // Check interactions via AI service (returns array of objects)
+    // If no medications are recorded, warn and stop
+    if (medications.length === 0) {
+      return res.render('scan', {
+        title: 'סריקת מזון',
+        detected: null,
+        confirmed: null,
+        error: 'לא נמצאו תרופות רשומות , יש להוסיף תרופות לפני סריקת מזון'
+      });
+    }
+
+    // Otherwise, check interactions via AI service
     const interactionData = await checkInteractions(userIngredients, medications);
 
-    // Save scan to user's history
+    // Save scan history
     await Patient.findByIdAndUpdate(userId, {
       $push: {
         scans: {
@@ -88,7 +113,7 @@ exports.confirmScan = async (req, res) => {
       }
     });
 
-    // Render final result with structured interaction data
+    // Render final results
     res.render('scan', {
       title: 'תוצאות הסריקה',
       detected: null,

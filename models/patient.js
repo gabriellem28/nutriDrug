@@ -10,7 +10,7 @@ const patientSchema = new mongoose.Schema({
   breastfeeding:   { type: Boolean, default: false },
   dateOfBirth:     { type: Date, required: true },
   age:             { type: Number, required: true },
-  chronicDiseases: { type: String },
+  chronicDiseases: [String],
   medications:     { type: [String], default: [] },
   email:           { type: String },
   phone:           { type: String },
